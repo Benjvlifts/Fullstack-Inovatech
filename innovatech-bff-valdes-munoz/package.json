@@ -1,14 +1,13 @@
 {
   "name": "innovatech-bff-valdes-munoz",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "BFF Innovatech Solutions - DSY1106",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"No tests configured\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.15.2",
@@ -18,5 +17,8 @@
     "express-rate-limit": "^8.4.1",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }

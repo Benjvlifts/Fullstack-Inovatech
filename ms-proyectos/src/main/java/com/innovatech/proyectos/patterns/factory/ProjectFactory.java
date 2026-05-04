@@ -33,14 +33,19 @@ public abstract class ProjectFactory {
      * Las fábricas concretas llaman a este método y complementan con atributos propios.
      */
     protected Project buildBaseProject(CreateProjectRequest request) {
-        return Project.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .type(request.getType())
-                .status(Project.ProjectStatus.PLANNING)
-                .managerId(request.getManagerId())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .build();
-    }
+    // Determinar el estado: si el request trae uno, úsalo; si no, usa PLANNING
+    Project.ProjectStatus finalStatus = (request.getStatus() != null) 
+                                        ? request.getStatus() 
+                                        : Project.ProjectStatus.PLANNING;
+
+    return Project.builder()
+            .name(request.getName())
+            .description(request.getDescription())
+            .type(request.getType())
+            .status(finalStatus) // <-- Ahora usa la variable dinámica
+            .managerId(request.getManagerId())
+            .startDate(request.getStartDate())
+            .endDate(request.getEndDate())
+            .build();
+}
 }

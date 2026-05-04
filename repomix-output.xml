@@ -40,8 +40,18 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
-innovatech-bff-valdes-munoz/env.env
+Guia_Despliegue_Innovatech.txt
+innovatech_auth_db
+innovatech_proyectos_db
+innovatech-bff-valdes-munoz/.env
 innovatech-bff-valdes-munoz/package.json
+innovatech-bff-valdes-munoz/src/index.js
+innovatech-bff-valdes-munoz/src/middleware/errorHandler.js
+innovatech-bff-valdes-munoz/src/routes/authRoutes.js
+innovatech-bff-valdes-munoz/src/routes/projectRoutes.js
+innovatech-bff-valdes-munoz/src/services/api.js
+innovatech-bff-valdes-munoz/src/services/CircuitBreaker.js
+innovatech-bff-valdes-munoz/src/services/httpClient.js
 innovatech-frontend-valdes-munoz/.gitignore
 innovatech-frontend-valdes-munoz/eslint.config.js
 innovatech-frontend-valdes-munoz/index.html
@@ -54,8 +64,15 @@ innovatech-frontend-valdes-munoz/src/App.jsx
 innovatech-frontend-valdes-munoz/src/assets/hero.png
 innovatech-frontend-valdes-munoz/src/assets/react.svg
 innovatech-frontend-valdes-munoz/src/assets/vite.svg
+innovatech-frontend-valdes-munoz/src/components/PrivateRoute.jsx
+innovatech-frontend-valdes-munoz/src/context/AuthContext.jsx
 innovatech-frontend-valdes-munoz/src/index.css
 innovatech-frontend-valdes-munoz/src/main.jsx
+innovatech-frontend-valdes-munoz/src/pages/DashboardPage.jsx
+innovatech-frontend-valdes-munoz/src/pages/LoginPage.jsx
+innovatech-frontend-valdes-munoz/src/pages/RegisterPage.jsx
+innovatech-frontend-valdes-munoz/src/services/authService.js
+innovatech-frontend-valdes-munoz/src/services/projectService.js
 innovatech-frontend-valdes-munoz/vite.config.js
 ms-auth/.gitattributes
 ms-auth/.gitignore
@@ -63,16 +80,39 @@ ms-auth/.mvn/wrapper/maven-wrapper.properties
 ms-auth/mvnw
 ms-auth/mvnw.cmd
 ms-auth/pom.xml
-ms-auth/src/main/java/com/innovatech/ms_auth/MsAuthApplication.java
+ms-auth/src/main/java/com/innovatech/auth/config/GlobalExceptionHandler.java
+ms-auth/src/main/java/com/innovatech/auth/config/SecurityConfig.java
+ms-auth/src/main/java/com/innovatech/auth/controller/AuthController.java
+ms-auth/src/main/java/com/innovatech/auth/dto/AuthDtos.java
+ms-auth/src/main/java/com/innovatech/auth/model/User.java
+ms-auth/src/main/java/com/innovatech/auth/MsAuthApplication.java
+ms-auth/src/main/java/com/innovatech/auth/repository/IUserRepository.java
+ms-auth/src/main/java/com/innovatech/auth/repository/JpaUserRepository.java
+ms-auth/src/main/java/com/innovatech/auth/security/JwtService.java
+ms-auth/src/main/java/com/innovatech/auth/service/AuthService.java
 ms-auth/src/main/resources/application.properties
-ms-auth/src/test/java/com/innovatech/ms_auth/MsAuthApplicationTests.java
+ms-auth/src/test/java/com/innovatech/auth/AuthServiceTest.java
+ms-auth/src/test/java/com/innovatech/auth/MsAuthApplicationTests.java
 ms-proyectos/.gitattributes
 ms-proyectos/.gitignore
 ms-proyectos/.mvn/wrapper/maven-wrapper.properties
 ms-proyectos/mvnw
 ms-proyectos/mvnw.cmd
 ms-proyectos/pom.xml
-ms-proyectos/src/main/java/com/innovatech/ms_proyectos/MsProyectosApplication.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/config/GlobalExceptionHandler.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/config/SecurityConfig.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/controller/ProjectController.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/dto/ProjectDtos.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/model/Project.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/MsProyectosApplication.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ConsultingProjectFactory.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/InfrastructureProjectFactory.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ProjectFactory.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ProjectFactoryProvider.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/SoftwareProjectFactory.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/repository/IProjectRepository.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/repository/JpaProjectRepository.java
+ms-proyectos/src/main/java/com/innovatech/proyectos/service/ProjectService.java
 ms-proyectos/src/main/resources/application.properties
 ms-proyectos/src/test/java/com/innovatech/ms_proyectos/MsProyectosApplicationTests.java
 </directory_structure>
@@ -80,28 +120,694 @@ ms-proyectos/src/test/java/com/innovatech/ms_proyectos/MsProyectosApplicationTes
 <files>
 This section contains the contents of the repository's files.
 
-<file path="innovatech-bff-valdes-munoz/env.env">
+<file path="Guia_Despliegue_Innovatech.txt">
+GUÍA DE DESPLIEGUE - INNOVATECH SOLUTIONS (BACKEND)
+==================================================
+
+Sigue este orden exacto para que todo funcione correctamente en una nueva PC.
+
+1. REQUISITOS PREVIOS
+---------------------
+Asegúrate de tener instalado en la PC de la U:
+- PostgreSQL 15+ (y pgAdmin 4).
+- Java JDK 21.
+- Maven 3.9+.
+- Node.js 18+.
+- Postman.
+
+2. PREPARACIÓN DE LA BASE DE DATOS (PostgreSQL)
+-----------------------------------------------
+Antes de ejecutar el código, debes tener las bases de datos listas:
+1. Abre pgAdmin 4.
+2. Crea una base de datos llamada: innovatech_auth_db
+3. Crea otra base de datos llamada: innovatech_proyectos_db
+
+*Si llevas un respaldo (.sql o .backup), haz clic derecho en la DB -> 'Restore' y selecciona el archivo.
+
+3. CONFIGURACIÓN DE MICROSERVICIOS (Java)
+-----------------------------------------
+En cada microservicio (ms-auth y ms-proyectos):
+1. Ve a: src/main/resources/application.properties
+2. Verifica/Cambia los siguientes datos según la PC de la U:
+   - spring.datasource.username=postgres
+   - spring.datasource.password=PON_AQUÍ_LA_CLAVE_DE_POSTGRES_DE_LA_U
+   - server.port=8081 (para ms-auth)
+   - server.port=8082 (para ms-proyectos)
+3. En la terminal de cada carpeta ejecuta:
+   $ mvn clean spring-boot:run
+
+4. CONFIGURACIÓN DEL BFF (Node.js)
+----------------------------------
+1. Entra a la carpeta: innovatech-bff-valdes-munoz
+2. Crea/Edita el archivo .env en la raíz (asegúrate que no tenga extensión .txt):
+   PORT=3000
+   MS_AUTH_URL=http://localhost:8081/api/auth
+   MS_PROYECTOS_URL=http://localhost:8082/api/projects
+3. En la terminal ejecuta:
+   $ npm install
+   $ node src/index.js
+   *Deberías ver: ms-auth -> http://localhost:8081/api/auth (no debe decir undefined)
+
+5. FLUJO DE PRUEBAS EN POSTMAN
+------------------------------
+Probar siempre al puerto 3000 (BFF):
+
+Paso 1: POST http://localhost:3000/api/auth/register
+   - Body JSON: {"name": "Test", "email": "test@u.cl", "password": "123", "role": "ADMIN"}
+
+Paso 2: POST http://localhost:3000/api/auth/login
+   - Body JSON: {"email": "test@u.cl", "password": "123"}
+   - COPIA EL TOKEN RECIBIDO.
+
+Paso 3: POST http://localhost:3000/api/projects
+   - Headers: Authorization -> Bearer PEGA_AQUÍ_EL_TOKEN
+   - Body JSON: {"name": "Proy U", "description": "Desc", "type": "SOFTWARE", "status": "IN_PROGRESS"}
+
+Paso 4: GET http://localhost:3000/api/projects/1
+   - Headers: Authorization -> Bearer TOKEN
+
+6. PRUEBA DE RESILIENCIA (CIRCUIT BREAKER)
+------------------------------------------
+1. Con todo funcionando, apaga el microservicio de proyectos (Ctrl+C).
+2. Haz el GET de proyectos en Postman 5 veces.
+3. El BFF responderá 503 "Service Unavailable" y el circuito quedará OPEN.
+4. Consulta http://localhost:3000/health para mostrar el estado.
+==================================================
+</file>
+
+<file path="innovatech_auth_db">
+--
+-- PostgreSQL database dump
+--
+
+\restrict CepaYrw3v0aLxtB1DGRLbl7GK3rWNdSjxNzGic3CgVQWzkBwkTsEM1rW0otCRif
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
+
+-- Started on 2026-04-29 11:33:28
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 220 (class 1259 OID 16391)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id bigint NOT NULL,
+    active boolean NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    email character varying(255) NOT NULL,
+    name character varying(100) NOT NULL,
+    password character varying(255) NOT NULL,
+    role character varying(255) NOT NULL,
+    updated_at timestamp(6) without time zone,
+    CONSTRAINT users_role_check CHECK (((role)::text = ANY ((ARRAY['ADMIN'::character varying, 'MANAGER'::character varying, 'EMPLOYEE'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16390)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.users ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- TOC entry 4962 (class 0 OID 16391)
+-- Dependencies: 220
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (id, active, created_at, email, name, password, role, updated_at) FROM stdin;
+1	t	2026-04-29 10:50:28.489701	benja@innovatech.cl	Benjamin Valdes	$2a$10$x7e6tX2Vl6HR2rqt/avgZOyxCbuIrVrho4PDMJQbsRrZHVPyvEOYa	ADMIN	\N
+\.
+
+
+--
+-- TOC entry 4968 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 1, true);
+
+
+--
+-- TOC entry 4811 (class 2606 OID 16407)
+-- Name: users uk6dotkott2kjsp8vw4d0m25fb7; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT uk6dotkott2kjsp8vw4d0m25fb7 UNIQUE (email);
+
+
+--
+-- TOC entry 4813 (class 2606 OID 16405)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+-- Completed on 2026-04-29 11:33:28
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict CepaYrw3v0aLxtB1DGRLbl7GK3rWNdSjxNzGic3CgVQWzkBwkTsEM1rW0otCRif
+</file>
+
+<file path="innovatech_proyectos_db">
+--
+-- PostgreSQL database dump
+--
+
+\restrict 8w33L76mdae49jHvdh4cBW0P8m5KeiL5SuIcaZ9Aeeu4Ml45kwmJpzmygzcmDjJ
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
+
+-- Started on 2026-04-29 11:33:40
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 220 (class 1259 OID 16424)
+-- Name: projects; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.projects (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    type character varying(255) NOT NULL,
+    status character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    budget_usd double precision,
+    client_name character varying(255),
+    cloud_provider character varying(255),
+    end_date date,
+    manager_id bigint,
+    repository_url character varying(255),
+    sla_days integer,
+    start_date date,
+    tech_stack character varying(255),
+    updated_at timestamp(6) without time zone
+);
+
+
+ALTER TABLE public.projects OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16423)
+-- Name: projects_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.projects_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.projects_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4967 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: projects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.projects_id_seq OWNED BY public.projects.id;
+
+
+--
+-- TOC entry 4809 (class 2604 OID 16437)
+-- Name: projects id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.projects ALTER COLUMN id SET DEFAULT nextval('public.projects_id_seq'::regclass);
+
+
+--
+-- TOC entry 4961 (class 0 OID 16424)
+-- Dependencies: 220
+-- Data for Name: projects; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.projects (id, name, description, type, status, created_at, budget_usd, client_name, cloud_provider, end_date, manager_id, repository_url, sla_days, start_date, tech_stack, updated_at) FROM stdin;
+1	App Móvil Clientes	Desarrollo de App en Flutter	SOFTWARE	PLANNING	2026-04-29 11:09:19.66144	\N	\N	\N	\N	\N	https://github.com/innovatech/app-mvil-clientes	\N	\N	Node.js / React / PostgreSQL	\N
+2	Migración a la Nube	Traslado de servidores locales a AWS	INFRASTRUCTURE	PLANNING	2026-04-29 11:10:30.283441	0	\N	AWS	\N	\N	\N	\N	\N	\N	\N
+3	Auditoría de Seguridad	Revisión anual de protocolos de acceso	CONSULTING	PLANNING	2026-04-29 11:11:00.315942	\N	\N	\N	\N	\N	\N	30	\N	\N	\N
+4	Auditoría de Seguridad	Revisión anual de protocolos de acceso	CONSULTING	PLANNING	2026-04-29 11:26:03.083467	\N	\N	\N	\N	\N	\N	30	\N	\N	\N
+5	Migración a la Nube	Traslado de servidores locales a AWS	INFRASTRUCTURE	PLANNING	2026-04-29 11:26:05.108468	0	\N	AWS	\N	\N	\N	\N	\N	\N	\N
+6	App Móvil Clientes	Desarrollo de App en Flutter	SOFTWARE	PLANNING	2026-04-29 11:26:06.782469	\N	\N	\N	\N	\N	https://github.com/innovatech/app-mvil-clientes	\N	\N	Node.js / React / PostgreSQL	\N
+7	Auditoría de Seguridad	Revisión anual de protocolos de acceso	CONSULTING	PLANNING	2026-04-29 11:27:07.86547	\N	\N	\N	\N	\N	\N	30	\N	\N	\N
+\.
+
+
+--
+-- TOC entry 4968 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: projects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.projects_id_seq', 7, true);
+
+
+--
+-- TOC entry 4812 (class 2606 OID 16439)
+-- Name: projects projects_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT projects_pkey PRIMARY KEY (id);
+
+
+-- Completed on 2026-04-29 11:33:40
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict 8w33L76mdae49jHvdh4cBW0P8m5KeiL5SuIcaZ9Aeeu4Ml45kwmJpzmygzcmDjJ
+</file>
+
+<file path="innovatech-bff-valdes-munoz/.env">
 PORT=3000
-MS_AUTH_URL=http://localhost:8081
-MS_PROYECTOS_URL=http://localhost:8082
+MS_AUTH_URL=http://localhost:8081/api/auth
+MS_PROYECTOS_URL=http://localhost:8082/api/projects
+
 CIRCUIT_BREAKER_THRESHOLD=5
-CIRCUIT_BREAKER_TIMEOUT=60000
+# 60000ms (1 min) es mucho para una demo; 30000ms (30 seg) es mejor para mostrar el reinicio
+CIRCUIT_BREAKER_TIMEOUT=30000
 </file>
 
 <file path="innovatech-bff-valdes-munoz/package.json">
 {
   "name": "innovatech-bff-valdes-munoz",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "BFF Innovatech Solutions - DSY1106",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"No tests configured\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.15.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
 }
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/index.js">
+/**
+ * BFF (Backend For Frontend) - Innovatech Solutions
+ * DSY1106 Desarrollo Fullstack III | Evaluación Parcial 2
+ *
+ * Actúa como capa intermedia entre el frontend React y los microservicios
+ * ms-auth y ms-proyectos. Implementa Circuit Breaker para resiliencia.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+
+const authRoutes = require('./routes/authRoutes');
+const projectRoutes = require('./routes/projectRoutes');
+const errorHandler = require('./middleware/errorHandler');
+const { httpClient } = require('./services/httpClient');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ── Middleware global ─────────────────────────────────────────────────────────
+app.use(helmet());
+app.use(cors({ origin: '*', credentials: true }));
+app.use(express.json());
+app.use(morgan('combined'));
+
+// Rate limiting: 100 solicitudes por IP por 15 minutos
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Demasiadas solicitudes. Intente más tarde.' },
+}));
+
+// ── Rutas ─────────────────────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+
+// ── Salud y estado de circuit breakers ───────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'UP',
+    service: 'innovatech-bff',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    circuitBreakers: httpClient.getBreakersStatus(),
+  });
+});
+
+// ── Manejo de errores ─────────────────────────────────────────────────────────
+app.use(errorHandler);
+
+// ── Inicio del servidor ───────────────────────────────────────────────────────
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ BFF Innovatech corriendo en http://localhost:${PORT}`);
+    console.log(`   ms-auth     → ${process.env.MS_AUTH_URL || 'http://localhost:8081'}`);
+    console.log(`   ms-proyectos → ${process.env.MS_PROYECTOS_URL || 'http://localhost:8082'}`);
+  });
+}
+
+module.exports = app;
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/middleware/errorHandler.js">
+const errorHandler = (err, req, res, next) => {
+  console.error(`[BFF Error] ${err.message}`);
+
+  if (err.response) {
+    return res.status(err.response.status).json(err.response.data);
+  }
+
+  if (err.request) {
+    return res.status(503).json({
+      status: 503,
+      error: 'Service Unavailable',
+      message: 'No se pudo conectar con el microservicio. Intente más tarde.',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  if (err.statusCode === 503) {
+    return res.status(503).json({
+      status: 503,
+      error: 'Circuit Open',
+      message: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return res.status(500).json({
+    status: 500,
+    error: 'Internal Server Error',
+    message: err.message || 'Error interno del BFF',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+module.exports = errorHandler;
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/routes/authRoutes.js">
+const express = require('express');
+const router = express.Router();
+const { httpClient } = require('../services/httpClient');
+
+router.post('/register', async (req, res, next) => {
+  try {
+    const data = await httpClient.auth.register(req.body);
+    res.status(201).json(data);
+  } catch (err) { next(err); }
+});
+
+router.post('/login', async (req, res, next) => {
+  try {
+    const data = await httpClient.auth.login(req.body);
+    res.status(200).json(data);
+  } catch (err) { next(err); }
+});
+
+router.get('/users', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    const data = await httpClient.auth.getUsers(headers);
+    res.status(200).json(data);
+  } catch (err) { next(err); }
+});
+
+module.exports = router;
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/routes/projectRoutes.js">
+const express = require('express');
+const router = express.Router();
+const { httpClient } = require('../services/httpClient');
+
+// GET todos los proyectos
+router.get('/', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    const data = await httpClient.projects.getAll({}, headers);
+    res.status(200).json(data);
+  } catch (err) { next(err); }
+});
+
+// GET proyecto por ID
+router.get('/:id', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    const data = await httpClient.projects.getById(req.params.id, headers);
+    res.status(200).json(data);
+  } catch (err) { next(err); }
+});
+
+// POST crear proyecto
+router.post('/', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    const data = await httpClient.projects.create(req.body, headers);
+    res.status(201).json(data);
+  } catch (err) { next(err); }
+});
+
+// PATCH actualizar estado
+router.patch('/:id/status', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    const data = await httpClient.projects.updateStatus(req.params.id, req.body, headers);
+    res.status(200).json(data);
+  } catch (err) { next(err); }
+});
+
+// DELETE eliminar proyecto
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const headers = { Authorization: req.headers.authorization };
+    await httpClient.projects.delete(req.params.id, headers);
+    res.status(204).send();
+  } catch (err) { next(err); }
+});
+
+module.exports = router;
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/services/api.js">
+// Este archivo no se usa en el BFF.
+// El acceso a los microservicios se hace desde httpClient.js
+module.exports = {};
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/services/CircuitBreaker.js">
+const STATES = {
+  CLOSED: 'CLOSED',
+  OPEN: 'OPEN',
+  HALF_OPEN: 'HALF_OPEN',
+};
+
+class CircuitBreaker {
+  constructor({ name, failureThreshold = 5, timeout = 30000 } = {}) {
+    this.name = name || 'unknown';
+    this.failureThreshold = failureThreshold;
+    this.timeout = timeout;
+    this.state = STATES.CLOSED;
+    this.failureCount = 0;
+    this.lastFailureTime = null;
+    this.successCount = 0;
+  }
+
+  async execute(fn, fallback = null) {
+    if (this.state === STATES.OPEN) {
+      if (this._shouldAttemptReset()) {
+        this.state = STATES.HALF_OPEN;
+        console.log(`[CircuitBreaker:${this.name}] → HALF_OPEN, probando recuperación`);
+      } else {
+        console.warn(`[CircuitBreaker:${this.name}] ABIERTO - rechazando solicitud`);
+        if (fallback) return fallback();
+        const error = new Error(`Servicio ${this.name} no disponible (circuit open)`);
+        error.statusCode = 503;
+        throw error;
+      }
+    }
+
+    try {
+      const result = await fn();
+      this._onSuccess();
+      return result;
+    } catch (err) {
+      this._onFailure();
+      if (fallback) return fallback();
+      throw err;
+    }
+  }
+
+  _onSuccess() {
+    this.failureCount = 0;
+    this.successCount++;
+    if (this.state === STATES.HALF_OPEN) {
+      this.state = STATES.CLOSED;
+      console.log(`[CircuitBreaker:${this.name}] → CLOSED (recuperado)`);
+    }
+  }
+
+  _onFailure() {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+    console.warn(`[CircuitBreaker:${this.name}] fallo ${this.failureCount}/${this.failureThreshold}`);
+    if (this.failureCount >= this.failureThreshold) {
+      this.state = STATES.OPEN;
+      console.error(`[CircuitBreaker:${this.name}] → OPEN`);
+    }
+  }
+
+  _shouldAttemptReset() {
+    return this.lastFailureTime && (Date.now() - this.lastFailureTime) >= this.timeout;
+  }
+
+  getStatus() {
+    return {
+      name: this.name,
+      state: this.state,
+      failureCount: this.failureCount,
+      successCount: this.successCount,
+      lastFailureTime: this.lastFailureTime ? new Date(this.lastFailureTime).toISOString() : null,
+    };
+  }
+}
+
+module.exports = { CircuitBreaker, STATES };
+</file>
+
+<file path="innovatech-bff-valdes-munoz/src/services/httpClient.js">
+const axios = require('axios');
+const { CircuitBreaker } = require('./CircuitBreaker');
+
+const MS_AUTH_URL = process.env.MS_AUTH_URL || 'http://localhost:8081/api/auth';
+const MS_PROYECTOS_URL = process.env.MS_PROYECTOS_URL || 'http://localhost:8082/api/projects';
+const CB_THRESHOLD = parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || '5', 10);
+const CB_TIMEOUT = parseInt(process.env.CIRCUIT_BREAKER_TIMEOUT || '30000', 10);
+
+const authBreaker = new CircuitBreaker({ name: 'ms-auth', failureThreshold: CB_THRESHOLD, timeout: CB_TIMEOUT });
+const proyectosBreaker = new CircuitBreaker({ name: 'ms-proyectos', failureThreshold: CB_THRESHOLD, timeout: CB_TIMEOUT });
+
+const authClient = axios.create({ baseURL: MS_AUTH_URL, timeout: 5000 });
+const proyectosClient = axios.create({ baseURL: MS_PROYECTOS_URL, timeout: 5000 });
+
+const httpClient = {
+  auth: {
+    register: (data) =>
+      authBreaker.execute(() => authClient.post('/register', data).then(r => r.data)),
+    login: (data) =>
+      authBreaker.execute(() => authClient.post('/login', data).then(r => r.data)),
+    validate: (token) =>
+      authBreaker.execute(
+        () => authClient.post('/validate', { token }).then(r => r.data),
+        () => ({ valid: false })
+      ),
+    getUsers: (headers) =>
+      authBreaker.execute(() => authClient.get('/users', { headers }).then(r => r.data)),
+    getUserById: (id, headers) =>
+      authBreaker.execute(() => authClient.get(`/users/${id}`, { headers }).then(r => r.data)),
+  },
+  projects: {
+    create: (data, headers) =>
+      proyectosBreaker.execute(() => proyectosClient.post('', data, { headers }).then(r => r.data)),
+
+    getAll: (params, headers) =>
+      proyectosBreaker.execute(
+        () => proyectosClient.get('', { params, headers }).then(r => r.data),
+        () => []
+      ),
+
+    getById: (id, headers) =>
+  // Debe ser solo '/${id}' porque el baseURL ya tiene el resto
+    proyectosBreaker.execute(() => proyectosClient.get(`/${id}`, { headers }).then(r => r.data)),
+
+    updateStatus: (id, data, headers) =>
+      proyectosBreaker.execute(() => proyectosClient.patch(`/${id}/status`, data, { headers }).then(r => r.data)),
+
+    delete: (id, headers) =>
+      proyectosBreaker.execute(() => proyectosClient.delete(`/${id}`, { headers }).then(r => r.data)),
+  },
+  getBreakersStatus: () => ({
+    auth: authBreaker.getStatus(),
+    proyectos: proyectosBreaker.getStatus(),
+  }),
+};
+
+module.exports = { httpClient, authBreaker, proyectosBreaker };
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/.gitignore">
@@ -157,12 +863,12 @@ export default defineConfig([
 
 <file path="innovatech-frontend-valdes-munoz/index.html">
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>innovatech-frontend-valdes-munoz</title>
+    <title>Innovatech Solutions — Gestión de Proyectos</title>
   </head>
   <body>
     <div id="root"></div>
@@ -175,7 +881,7 @@ export default defineConfig([
 {
   "name": "innovatech-frontend-valdes-munoz",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -186,7 +892,8 @@ export default defineConfig([
   "dependencies": {
     "axios": "^1.15.2",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -253,315 +960,30 @@ If you are developing a production application, we recommend using TypeScript wi
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/src/App.css">
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
-}
+/* No utilizado - estilos en index.css */
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/src/App.jsx">
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import LoginPage from './pages/LoginPage.jsx'
+import RegisterPage from './pages/RegisterPage.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
+import PrivateRoute from './components/PrivateRoute.jsx'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/dashboard" element={
+        <PrivateRoute>
+          <DashboardPage />
+        </PrivateRoute>
+      } />
+    </Routes>
   )
 }
-
-export default App
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/src/assets/react.svg">
@@ -572,140 +994,549 @@ export default App
 <svg xmlns="http://www.w3.org/2000/svg" width="77" height="47" fill="none" aria-labelledby="vite-logo-title" viewBox="0 0 77 47"><title id="vite-logo-title">Vite</title><style>.parenthesis{fill:#000}@media (prefers-color-scheme:dark){.parenthesis{fill:#fff}}</style><path fill="#9135ff" d="M40.151 45.71c-.663.844-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.493c-.92 0-1.457-1.04-.92-1.788l7.479-10.471c1.07-1.498 0-3.578-1.842-3.578H15.443c-.92 0-1.456-1.04-.92-1.788l9.696-13.576c.213-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.472c-1.07 1.497 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.087.89 1.83L40.153 45.712z"/><mask id="a" width="48" height="47" x="14" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M40.047 45.71c-.663.843-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.389c-.92 0-1.457-1.04-.92-1.788l7.479-10.472c1.07-1.497 0-3.578-1.842-3.578H15.34c-.92 0-1.456-1.04-.92-1.788l9.696-13.575c.213-.297.556-.474.92-.474H53.93c.92 0 1.456 1.04.92 1.788L47.37 13.03c-1.07 1.498 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.088.89 1.831L40.049 45.712z"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#eee6ff" rx="5.508" ry="14.704" transform="rotate(269.814 20.96 11.29)scale(-1 1)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#eee6ff" rx="10.399" ry="29.851" transform="rotate(89.814 -16.902 -8.275)scale(1 -1)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#8900ff" rx="5.508" ry="30.487" transform="rotate(89.814 -19.197 -7.127)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.928 4.177)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.738 5.52)scale(1 -1)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#eee6ff" rx="14.072" ry="22.078" transform="rotate(93.35 31.245 55.578)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx="14.592" cy="9.743" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(39.51 14.592 9.743)"/></g><g filter="url(#k)"><ellipse cx="61.728" cy="-5.321" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 61.728 -5.32)"/></g><g filter="url(#l)"><ellipse cx="55.618" cy="7.104" fill="#00c2ff" rx="5.971" ry="9.665" transform="rotate(37.892 55.618 7.104)"/></g><g filter="url(#m)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#n)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#o)"><ellipse cx="49.857" cy="30.678" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 49.857 30.678)"/></g><g filter="url(#p)"><ellipse cx="52.623" cy="33.171" fill="#00c2ff" rx="5.971" ry="15.297" transform="rotate(37.892 52.623 33.17)"/></g></g><path d="M6.919 0c-9.198 13.166-9.252 33.575 0 46.789h6.215c-9.25-13.214-9.196-33.623 0-46.789zm62.424 0h-6.215c9.198 13.166 9.252 33.575 0 46.789h6.215c9.25-13.214 9.196-33.623 0-46.789" class="parenthesis"/><defs><filter id="b" width="60.045" height="41.654" x="-5.564" y="16.92" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-40.407" y="-6.762" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-35.435" y="2.801" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-30.84" y="20.8" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-29.307" y="21.949" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="29.961" y="-17.13" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-13.43" y="-22.082" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="34.321" y="-37.644" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="38.847" y="-10.552" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="22.45" y="-1.645" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="32.919" y="11.36" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter></defs></svg>
 </file>
 
+<file path="innovatech-frontend-valdes-munoz/src/components/PrivateRoute.jsx">
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
+
+export default function PrivateRoute({ children }) {
+  const { isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return <div style={{ display:'flex', justifyContent:'center', alignItems:'center', minHeight:'100vh' }}>Cargando...</div>
+  return isAuthenticated ? children : <Navigate to="/login" replace />
+}
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/context/AuthContext.jsx">
+/**
+ * AuthContext — Patrón Observer con React Context + useReducer.
+ * Cualquier componente puede "observar" el estado de autenticación.
+ */
+import { createContext, useContext, useReducer, useEffect } from 'react'
+
+const AuthContext = createContext(null)
+
+const initialState = {
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  isLoading: true,
+}
+
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'LOGIN':
+    case 'RESTORE':
+      return { ...state, user: action.payload.user, token: action.payload.token, isAuthenticated: true, isLoading: false }
+    case 'LOGOUT':
+      return { ...initialState, isLoading: false }
+    case 'LOADED':
+      return { ...state, isLoading: false }
+    default:
+      return state
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [state, dispatch] = useReducer(authReducer, initialState)
+
+  useEffect(() => {
+    const token = localStorage.getItem('innovatech_token')
+    const userStr = localStorage.getItem('innovatech_user')
+    if (token && userStr) {
+      try {
+        dispatch({ type: 'RESTORE', payload: { user: JSON.parse(userStr), token } })
+      } catch {
+        dispatch({ type: 'LOADED' })
+      }
+    } else {
+      dispatch({ type: 'LOADED' })
+    }
+  }, [])
+
+  const login = (user, token) => {
+    localStorage.setItem('innovatech_token', token)
+    localStorage.setItem('innovatech_user', JSON.stringify(user))
+    dispatch({ type: 'LOGIN', payload: { user, token } })
+  }
+
+  const logout = () => {
+    localStorage.removeItem('innovatech_token')
+    localStorage.removeItem('innovatech_user')
+    dispatch({ type: 'LOGOUT' })
+  }
+
+  return (
+    <AuthContext.Provider value={{ ...state, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider')
+  return ctx
+}
+</file>
+
 <file path="innovatech-frontend-valdes-munoz/src/index.css">
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f0f4f8;
+  color: #1a2a3a;
+  min-height: 100vh;
 }
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+:root {
+  --primary: #0d7c8f;
+  --primary-dark: #0a6070;
+  --navy: #1c3554;
+  --danger: #c62828;
+  --success: #1e8449;
+  --white: #ffffff;
+  --gray: #f4f8fb;
+  --border: #cfd8dc;
+  --shadow: 0 2px 8px rgba(0,0,0,0.10);
+  --radius: 8px;
 }
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/src/main.jsx">
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
 import App from './App.jsx'
+import './index.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  </StrictMode>
 )
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/pages/DashboardPage.jsx">
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
+import { getProjects, createProject } from '../services/projectService.js'
+
+const STATUS_COLORS = {
+  PLANNING:    { bg:'#e3f2fd', color:'#1565c0' },
+  IN_PROGRESS: { bg:'#e8f5e9', color:'#1e8449' },
+  COMPLETED:   { bg:'#f3e5f5', color:'#6a1b9a' },
+  ON_HOLD:     { bg:'#fff3e0', color:'#e65100' },
+}
+
+const defaultProj = { name:'', description:'', type:'SOFTWARE', status:'PLANNING' }
+
+export default function DashboardPage() {
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [newProj, setNewProj] = useState(defaultProj)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    getProjects()
+      .then(setProjects)
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleLogout = () => { logout(); navigate('/login') }
+
+  const handleCreate = async () => {
+    if (!newProj.name.trim()) return
+    setSaving(true)
+    try {
+      const created = await createProject(newProj)
+      setProjects(p => [created, ...p])
+      setShowModal(false)
+      setNewProj(defaultProj)
+    } catch { alert('Error al crear proyecto') }
+    finally { setSaving(false) }
+  }
+
+  const s = {
+    page: { minHeight:'100vh', background:'#f0f4f8' },
+    nav: { background:'#1c3554', padding:'0 2rem', height:'56px', display:'flex', alignItems:'center', justifyContent:'space-between', boxShadow:'0 2px 8px rgba(0,0,0,0.2)' },
+    navBrand: { color:'#fff', fontWeight:700, fontSize:'1.1rem' },
+    navRight: { display:'flex', alignItems:'center', gap:'1rem' },
+    navUser: { color:'#c8e8f0', fontSize:'0.87rem' },
+    navRole: { background:'#0d7c8f', color:'#fff', padding:'2px 10px', borderRadius:'12px', fontSize:'0.75rem', fontWeight:600 },
+    btnLogout: { background:'transparent', border:'1px solid #607d8b', color:'#90cad4', padding:'4px 14px', borderRadius:'6px', cursor:'pointer', fontSize:'0.85rem' },
+    main: { maxWidth:'1100px', margin:'0 auto', padding:'2rem 1.5rem' },
+    h1: { fontSize:'1.4rem', fontWeight:700, color:'#1c3554', marginBottom:'1.5rem' },
+    statsRow: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))', gap:'1rem', marginBottom:'2rem' },
+    stat: { background:'#fff', borderRadius:'8px', padding:'1.2rem', textAlign:'center', boxShadow:'0 2px 8px rgba(0,0,0,0.08)' },
+    statN: { fontSize:'2rem', fontWeight:700, color:'#0d7c8f' },
+    statL: { fontSize:'0.82rem', color:'#607d8b', marginTop:'4px' },
+    section: { background:'#fff', borderRadius:'8px', padding:'1.5rem', boxShadow:'0 2px 8px rgba(0,0,0,0.08)' },
+    secHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' },
+    secTitle: { fontSize:'1rem', fontWeight:600, color:'#1c3554' },
+    btnPrimary: { background:'#0d7c8f', color:'#fff', border:'none', padding:'0.5rem 1.2rem', borderRadius:'6px', cursor:'pointer', fontWeight:600, fontSize:'0.87rem' },
+    table: { width:'100%', borderCollapse:'collapse' },
+    th: { textAlign:'left', padding:'0.6rem 0.8rem', borderBottom:'2px solid #e0e0e0', fontSize:'0.8rem', fontWeight:600, color:'#37474f', textTransform:'uppercase' },
+    td: { padding:'0.7rem 0.8rem', borderBottom:'1px solid #f0f0f0', fontSize:'0.9rem' },
+    badge: { padding:'2px 10px', borderRadius:'12px', fontSize:'0.75rem', fontWeight:600 },
+    empty: { textAlign:'center', padding:'2.5rem', color:'#90a4ae' },
+    overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
+    modal: { background:'#fff', borderRadius:'10px', padding:'2rem', width:'100%', maxWidth:'460px', boxShadow:'0 8px 32px rgba(0,0,0,0.25)' },
+    mTitle: { fontSize:'1.1rem', fontWeight:700, color:'#1c3554', marginBottom:'1.2rem' },
+    mGroup: { marginBottom:'0.9rem' },
+    mLabel: { display:'block', fontSize:'0.82rem', fontWeight:600, color:'#37474f', marginBottom:'0.35rem' },
+    mInput: { width:'100%', padding:'0.55rem 0.75rem', border:'1.5px solid #cfd8dc', borderRadius:'6px', fontSize:'0.9rem', outline:'none' },
+    mSelect: { width:'100%', padding:'0.55rem 0.75rem', border:'1.5px solid #cfd8dc', borderRadius:'6px', fontSize:'0.9rem', background:'#fff', outline:'none' },
+    mActions: { display:'flex', gap:'0.8rem', justifyContent:'flex-end', marginTop:'1.2rem' },
+    btnSecondary: { background:'transparent', border:'1.5px solid #cfd8dc', color:'#37474f', padding:'0.5rem 1.2rem', borderRadius:'6px', cursor:'pointer', fontWeight:600, fontSize:'0.87rem' },
+  }
+
+  const stats = {
+    total: projects.length,
+    activos: projects.filter(p => p.status === 'IN_PROGRESS').length,
+    completados: projects.filter(p => p.status === 'COMPLETED').length,
+  }
+
+  return (
+    <div style={s.page}>
+      <nav style={s.nav}>
+        <span style={s.navBrand}>Innovatech Solutions</span>
+        <div style={s.navRight}>
+          <span style={s.navUser}>Hola, <strong>{user?.name}</strong></span>
+          <span style={s.navRole}>{user?.role}</span>
+          <button style={s.btnLogout} onClick={handleLogout}>Cerrar sesión</button>
+        </div>
+      </nav>
+
+      <main style={s.main}>
+        <h1 style={s.h1}>Panel de Gestión de Proyectos</h1>
+
+        <div style={s.statsRow}>
+          {[['Total', stats.total], ['En progreso', stats.activos], ['Completados', stats.completados]].map(([l, n]) => (
+            <div key={l} style={s.stat}>
+              <div style={s.statN}>{n}</div>
+              <div style={s.statL}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={s.section}>
+          <div style={s.secHeader}>
+            <span style={s.secTitle}>Proyectos</span>
+            <button style={s.btnPrimary} onClick={() => setShowModal(true)}>+ Nuevo Proyecto</button>
+          </div>
+          {loading ? (
+            <p style={s.empty}>Cargando proyectos...</p>
+          ) : projects.length === 0 ? (
+            <p style={s.empty}>No hay proyectos registrados. ¡Crea el primero!</p>
+          ) : (
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  {['Nombre','Descripción','Tipo','Estado'].map(h => <th key={h} style={s.th}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map((p, i) => (
+                  <tr key={p.id ?? i}>
+                    <td style={s.td}><strong>{p.name}</strong></td>
+                    <td style={s.td}>{p.description}</td>
+                    <td style={s.td}>{p.type}</td>
+                    <td style={s.td}>
+                      <span style={{ ...s.badge, ...(STATUS_COLORS[p.status] ?? { bg:'#eee', color:'#333' }) }}>
+                        {p.status?.replace('_', ' ')}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
+
+      {showModal && (
+        <div style={s.overlay} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div style={s.modal}>
+            <h3 style={s.mTitle}>Nuevo Proyecto</h3>
+            {[['name','Nombre *','text'],['description','Descripción','text']].map(([f,l,t]) => (
+              <div key={f} style={s.mGroup}>
+                <label style={s.mLabel}>{l}</label>
+                <input type={t} style={s.mInput} value={newProj[f]} onChange={e => setNewProj(p => ({...p,[f]:e.target.value}))} />
+              </div>
+            ))}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.8rem' }}>
+              <div style={s.mGroup}>
+                <label style={s.mLabel}>Tipo</label>
+                <select style={s.mSelect} value={newProj.type} onChange={e => setNewProj(p => ({...p,type:e.target.value}))}>
+                  {['SOFTWARE','CONSULTING','INFRASTRUCTURE'].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div style={s.mGroup}>
+                <label style={s.mLabel}>Estado</label>
+                <select style={s.mSelect} value={newProj.status} onChange={e => setNewProj(p => ({...p,status:e.target.value}))}>
+                  {['PLANNING','IN_PROGRESS','COMPLETED','ON_HOLD'].map(st => <option key={st} value={st}>{st.replace('_',' ')}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={s.mActions}>
+              <button style={s.btnSecondary} onClick={() => setShowModal(false)}>Cancelar</button>
+              <button style={s.btnPrimary} onClick={handleCreate} disabled={saving}>{saving ? 'Guardando...' : 'Crear'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/pages/LoginPage.jsx">
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { login } from '../services/authService.js'
+import { useAuth } from '../context/AuthContext.jsx'
+
+export default function LoginPage() {
+  const navigate = useNavigate()
+  const { login: authLogin } = useAuth()
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    setForm(p => ({ ...p, [e.target.name]: e.target.value }))
+    setError(null)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.email || !form.password) { setError('Completa todos los campos.'); return }
+    setLoading(true)
+    try {
+      const res = await login(form)
+      // ms-auth devuelve: { token, userId, name, email, role }
+      authLogin({ id: res.userId, name: res.name, email: res.email, role: res.role }, res.token)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.status === 401 ? 'Email o contraseña incorrectos.' : (err.message ?? 'Error inesperado.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const s = {
+    page: { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg, #0d1b2a, #1c3554)' },
+    card: { background:'#fff', borderRadius:'12px', padding:'2.5rem', width:'100%', maxWidth:'400px', boxShadow:'0 8px 32px rgba(0,0,0,0.25)' },
+    brand: { textAlign:'center', marginBottom:'1.5rem' },
+    brandTitle: { fontSize:'1.5rem', fontWeight:700, color:'#1c3554' },
+    brandSub: { fontSize:'0.8rem', color:'#607d8b', marginTop:'2px' },
+    title: { textAlign:'center', fontSize:'1.15rem', fontWeight:600, color:'#1a2a3a', marginBottom:'1.5rem' },
+    group: { marginBottom:'1rem' },
+    label: { display:'block', fontSize:'0.85rem', fontWeight:600, color:'#37474f', marginBottom:'0.35rem' },
+    input: { width:'100%', padding:'0.65rem 0.85rem', border:'1.5px solid #cfd8dc', borderRadius:'6px', fontSize:'0.9rem', outline:'none' },
+    btn: { width:'100%', padding:'0.75rem', background: loading ? '#90cad4' : '#0d7c8f', color:'#fff', border:'none', borderRadius:'6px', fontSize:'1rem', fontWeight:600, cursor: loading ? 'not-allowed' : 'pointer', marginTop:'0.5rem' },
+    err: { background:'#fdecea', border:'1px solid #f5c6c6', borderRadius:'6px', padding:'0.65rem', color:'#c62828', fontSize:'0.87rem', marginBottom:'1rem' },
+    link: { textAlign:'center', marginTop:'1rem', fontSize:'0.87rem', color:'#607d8b' },
+    a: { color:'#0d7c8f', fontWeight:600, textDecoration:'none' },
+  }
+
+  return (
+    <div style={s.page}>
+      <div style={s.card}>
+        <div style={s.brand}>
+          <div style={s.brandTitle}>Innovatech Solutions</div>
+          <div style={s.brandSub}>Plataforma de Gestión de Proyectos</div>
+        </div>
+        <h2 style={s.title}>Iniciar Sesión</h2>
+        {error && <div style={s.err} role="alert">{error}</div>}
+        <form onSubmit={handleSubmit} noValidate>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="email">Correo electrónico</label>
+            <input id="email" name="email" type="email" style={s.input} value={form.email} onChange={handleChange} placeholder="correo@empresa.cl" />
+          </div>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="password">Contraseña</label>
+            <input id="password" name="password" type="password" style={s.input} value={form.password} onChange={handleChange} placeholder="Tu contraseña" />
+          </div>
+          <button type="submit" style={s.btn} disabled={loading}>{loading ? 'Iniciando...' : 'Iniciar Sesión'}</button>
+        </form>
+        <p style={s.link}>¿No tienes cuenta? <Link to="/register" style={s.a}>Regístrate aquí</Link></p>
+      </div>
+    </div>
+  )
+}
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/pages/RegisterPage.jsx">
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { register } from '../services/authService.js'
+import { useAuth } from '../context/AuthContext.jsx'
+
+export default function RegisterPage() {
+  const navigate = useNavigate()
+  const { login: authLogin } = useAuth()
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'EMPLOYEE' })
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    setForm(p => ({ ...p, [e.target.name]: e.target.value }))
+    setError(null)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.name || !form.email || !form.password) { setError('Completa todos los campos.'); return }
+    if (form.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return }
+    setLoading(true)
+    try {
+      const res = await register(form)
+      authLogin({ id: res.userId, name: res.name, email: res.email, role: res.role }, res.token)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.status === 400 ? 'El email ya está registrado.' : (err.message ?? 'Error inesperado.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const s = {
+    page: { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg, #0d1b2a, #1c3554)', padding:'1rem' },
+    card: { background:'#fff', borderRadius:'12px', padding:'2.5rem', width:'100%', maxWidth:'440px', boxShadow:'0 8px 32px rgba(0,0,0,0.25)' },
+    brand: { textAlign:'center', marginBottom:'1.5rem' },
+    brandTitle: { fontSize:'1.4rem', fontWeight:700, color:'#1c3554' },
+    brandSub: { fontSize:'0.8rem', color:'#607d8b' },
+    title: { textAlign:'center', fontSize:'1.1rem', fontWeight:600, color:'#1a2a3a', marginBottom:'1.5rem' },
+    group: { marginBottom:'0.9rem' },
+    label: { display:'block', fontSize:'0.82rem', fontWeight:600, color:'#37474f', marginBottom:'0.35rem' },
+    input: { width:'100%', padding:'0.6rem 0.8rem', border:'1.5px solid #cfd8dc', borderRadius:'6px', fontSize:'0.9rem', outline:'none' },
+    select: { width:'100%', padding:'0.6rem 0.8rem', border:'1.5px solid #cfd8dc', borderRadius:'6px', fontSize:'0.9rem', background:'#fff', outline:'none' },
+    btn: { width:'100%', padding:'0.75rem', background: loading ? '#90cad4' : '#0d7c8f', color:'#fff', border:'none', borderRadius:'6px', fontSize:'1rem', fontWeight:600, cursor: loading ? 'not-allowed' : 'pointer', marginTop:'0.5rem' },
+    err: { background:'#fdecea', border:'1px solid #f5c6c6', borderRadius:'6px', padding:'0.65rem', color:'#c62828', fontSize:'0.87rem', marginBottom:'1rem' },
+    link: { textAlign:'center', marginTop:'1rem', fontSize:'0.87rem', color:'#607d8b' },
+    a: { color:'#0d7c8f', fontWeight:600, textDecoration:'none' },
+  }
+
+  return (
+    <div style={s.page}>
+      <div style={s.card}>
+        <div style={s.brand}>
+          <div style={s.brandTitle}>Innovatech Solutions</div>
+          <div style={s.brandSub}>Crear nueva cuenta</div>
+        </div>
+        <h2 style={s.title}>Registro de Usuario</h2>
+        {error && <div style={s.err} role="alert">{error}</div>}
+        <form onSubmit={handleSubmit} noValidate>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="name">Nombre completo</label>
+            <input id="name" name="name" type="text" style={s.input} value={form.name} onChange={handleChange} placeholder="Ej: Juan Pérez" />
+          </div>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="email">Correo electrónico</label>
+            <input id="email" name="email" type="email" style={s.input} value={form.email} onChange={handleChange} placeholder="correo@empresa.cl" />
+          </div>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="password">Contraseña (mín. 6 caracteres)</label>
+            <input id="password" name="password" type="password" style={s.input} value={form.password} onChange={handleChange} placeholder="Tu contraseña" />
+          </div>
+          <div style={s.group}>
+            <label style={s.label} htmlFor="role">Perfil</label>
+            <select id="role" name="role" style={s.select} value={form.role} onChange={handleChange}>
+              <option value="EMPLOYEE">Empleado</option>
+              <option value="MANAGER">Manager</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+          <button type="submit" style={s.btn} disabled={loading}>{loading ? 'Registrando...' : 'Crear Cuenta'}</button>
+        </form>
+        <p style={s.link}>¿Ya tienes cuenta? <Link to="/login" style={s.a}>Inicia sesión aquí</Link></p>
+      </div>
+    </div>
+  )
+}
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/services/authService.js">
+import axios from 'axios'
+
+const client = axios.create({ baseURL: '/api/auth', timeout: 10000 })
+
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('innovatech_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+function parseError(err) {
+  if (err.response) return { message: err.response.data?.message ?? 'Error del servidor', status: err.response.status }
+  return { message: 'No se pudo conectar con el servidor', status: 0 }
+}
+
+export async function login(credentials) {
+  try {
+    const { data } = await client.post('/login', credentials)
+    return data
+  } catch (e) { throw parseError(e) }
+}
+
+export async function register(userData) {
+  try {
+    const { data } = await client.post('/register', userData)
+    return data
+  } catch (e) { throw parseError(e) }
+}
+</file>
+
+<file path="innovatech-frontend-valdes-munoz/src/services/projectService.js">
+import axios from 'axios'
+
+const client = axios.create({ baseURL: '/api/projects', timeout: 10000 })
+
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('innovatech_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+export async function getProjects() {
+  const { data } = await client.get('/')
+  return data
+}
+
+export async function createProject(project) {
+  const { data } = await client.post('/', project)
+  return data
+}
+
+export async function deleteProject(id) {
+  await client.delete(`/${id}`)
+}
 </file>
 
 <file path="innovatech-frontend-valdes-munoz/vite.config.js">
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
 })
 </file>
 
@@ -1254,31 +2085,26 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.14</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>3.4.5</version>
+		<relativePath/>
 	</parent>
 	<groupId>com.innovatech</groupId>
 	<artifactId>ms-auth</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<version>1.0.0</version>
+	<name>ms-auth</name>
+	<description>Microservicio de Autenticación - Innovatech Solutions</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -1288,10 +2114,22 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.12.5</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.12.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.12.5</version>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -1308,85 +2146,907 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
 </file>
 
-<file path="ms-auth/src/main/java/com/innovatech/ms_auth/MsAuthApplication.java">
-package com.innovatech.ms_auth;
+<file path="ms-auth/src/main/java/com/innovatech/auth/config/GlobalExceptionHandler.java">
+package com.innovatech.auth.config;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Manejador global de excepciones para ms-proyectos.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(e ->
+                fields.put(((FieldError) e).getField(), e.getDefaultMessage()));
+        return buildError(HttpStatus.BAD_REQUEST, "Error de validación", fields);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegal(IllegalArgumentException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, "Valor inválido: " + ex.getValue(), null);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", null);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String msg, Object details) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", msg);
+        if (details != null) body.put("details", details);
+        return ResponseEntity.status(status).body(body);
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/config/SecurityConfig.java">
+package com.innovatech.auth.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+/**
+ * Configuración de seguridad del microservicio ms-auth.
+ * Permite acceso público a los endpoints de autenticación.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().authenticated()
+            );
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/controller/AuthController.java">
+package com.innovatech.auth.controller;
+
+import com.innovatech.auth.dto.AuthDtos.*;
+import com.innovatech.auth.service.AuthService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Controlador REST del microservicio ms-auth.
+ * Expone los endpoints de registro, login, validación de token y consulta de usuarios.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+public class AuthController {
+
+    private final AuthService authService;
+
+    /**
+     * POST /api/auth/register
+     * Registra un nuevo usuario en el sistema.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * POST /api/auth/login
+     * Autentica un usuario y retorna un token JWT.
+     */
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * POST /api/auth/validate
+     * Valida un token JWT (usado por el BFF y otros microservicios).
+     */
+    @PostMapping("/validate")
+    public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        boolean valid = authService.validateToken(token);
+        return ResponseEntity.ok(Map.of("valid", valid));
+    }
+
+    /**
+     * GET /api/auth/users
+     * Retorna todos los usuarios del sistema.
+     */
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    /**
+     * GET /api/auth/users/{id}
+     * Retorna un usuario por ID.
+     */
+    @GetMapping("/users/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.getUserById(id));
+    }
+
+    /**
+     * GET /api/auth/health
+     * Endpoint de salud del microservicio.
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "service", "ms-auth",
+                "version", "1.0.0"
+        ));
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/dto/AuthDtos.java">
+package com.innovatech.auth.dto;
+
+import com.innovatech.auth.model.User;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * DTOs del microservicio ms-auth.
+ * Separan la capa de transporte de la capa de dominio (buena práctica DDD).
+ */
+public class AuthDtos {
+
+    // ── Request: Registro de nuevo usuario ──────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RegisterRequest {
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(min = 2, max = 100)
+        private String name;
+
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "Formato de email inválido")
+        private String email;
+
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+        private String password;
+
+        private User.Role role;
+    }
+
+    // ── Request: Login ───────────────────────────────────────────────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginRequest {
+        @NotBlank(message = "El email es obligatorio")
+        @Email
+        private String email;
+
+        @NotBlank(message = "La contraseña es obligatoria")
+        private String password;
+    }
+
+    // ── Response: Token JWT ──────────────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AuthResponse {
+        private String token;
+        private String type;
+        private Long userId;
+        private String name;
+        private String email;
+        private String role;
+    }
+
+    // ── Response: Datos públicos del usuario ─────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserResponse {
+        private Long id;
+        private String name;
+        private String email;
+        private String role;
+        private boolean active;
+    }
+
+    // ── Response: Mensaje genérico ───────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MessageResponse {
+        private String message;
+        private boolean success;
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/model/User.java">
+package com.innovatech.auth.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Entidad Usuario - representa un usuario del sistema Innovatech.
+ * Patrón Repository: esta clase es la entidad gestionada por IUserRepository.
+ */
+@Entity
+@Table(name = "users",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email")
+    })
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Size(min = 2, max = 100)
+    @Column(nullable = false)
+    private String name;
+
+    @NotBlank
+    @Email
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.EMPLOYEE;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public enum Role {
+        ADMIN, MANAGER, EMPLOYEE
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/MsAuthApplication.java">
+package com.innovatech.auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Punto de entrada del microservicio de Autenticación (ms-auth).
+ * Responsable de la gestión de usuarios, tokens JWT y roles.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ * @version 1.0.0
+ */
 @SpringBootApplication
 public class MsAuthApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MsAuthApplication.class, args);
+    }
+}
+</file>
 
-	public static void main(String[] args) {
-		SpringApplication.run(MsAuthApplication.class, args);
-	}
+<file path="ms-auth/src/main/java/com/innovatech/auth/repository/IUserRepository.java">
+package com.innovatech.auth.repository;
 
+import com.innovatech.auth.model.User;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Interfaz de dominio para usuarios. 
+ * Solo contiene métodos personalizados.
+ */
+public interface IUserRepository {
+    Optional<User> findByEmail(String email);
+    List<User> findByRole(User.Role role);
+    List<User> findByActive(boolean active);
+    boolean existsByEmail(String email);
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/repository/JpaUserRepository.java">
+package com.innovatech.auth.repository;
+
+import com.innovatech.auth.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Esta interfaz une la potencia de Spring Data (JpaRepository) 
+ * con tus métodos personalizados (IUserRepository).
+ */
+@Repository
+public interface JpaUserRepository extends JpaRepository<User, Long>, IUserRepository {
+    // Se deja vacío porque hereda todo de ambos padres.
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/security/JwtService.java">
+package com.innovatech.auth.security;
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+/**
+ * Servicio de generación y validación de tokens JWT.
+ * Utilizado por AuthService para emitir tokens tras autenticación exitosa.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Service
+public class JwtService {
+
+    @Value("${app.jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${app.jwt.expiration-ms}")
+    private long jwtExpirationMs;
+
+    // ── Generación ───────────────────────────────────────────────────────────
+
+    public String generateToken(String email, String role, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        claims.put("userId", userId);
+        return buildToken(claims, email);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String subject) {
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(subject)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    // ── Validación ───────────────────────────────────────────────────────────
+
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);
+            return !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Long.class));
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(
+                java.util.Base64.getEncoder().encodeToString(jwtSecret.getBytes())
+        );
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+}
+</file>
+
+<file path="ms-auth/src/main/java/com/innovatech/auth/service/AuthService.java">
+package com.innovatech.auth.service;
+
+import com.innovatech.auth.dto.AuthDtos.*;
+import com.innovatech.auth.model.User;
+import com.innovatech.auth.repository.IUserRepository;
+import com.innovatech.auth.repository.JpaUserRepository;
+import com.innovatech.auth.security.JwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Servicio de negocio para autenticación y gestión de usuarios.
+ *
+ * PATRÓN REPOSITORY: AuthService depende de JpaUserRepository (interfaz),
+ * nunca de la implementación concreta ni de JPA directamente.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    // Cambia IUserRepository por JpaUserRepository
+    private final JpaUserRepository userRepository; 
+    
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    // ── Registro ──────────────────────────────────────────────────────────────
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("El email ya está registrado: " + request.getEmail());
+        }
+
+        User.Role role = (request.getRole() != null) ? request.getRole() : User.Role.EMPLOYEE;
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .active(true)
+                .build();
+
+        User saved = userRepository.save(user);
+        String token = jwtService.generateToken(saved.getEmail(), saved.getRole().name(), saved.getId());
+
+        return AuthResponse.builder()
+                .token(token)
+                .type("Bearer")
+                .userId(saved.getId())
+                .name(saved.getName())
+                .email(saved.getEmail())
+                .role(saved.getRole().name())
+                .build();
+    }
+
+    // ── Login ─────────────────────────────────────────────────────────────────
+
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
+
+        if (!user.isActive()) {
+            throw new BadCredentialsException("Usuario inactivo");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Credenciales inválidas");
+        }
+
+        String token = jwtService.generateToken(user.getEmail(), user.getRole().name(), user.getId());
+
+        return AuthResponse.builder()
+                .token(token)
+                .type("Bearer")
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+    }
+
+    // ── Validación de token ───────────────────────────────────────────────────
+
+    public boolean validateToken(String token) {
+        return jwtService.isTokenValid(token);
+    }
+
+    // ── Consulta de usuarios ──────────────────────────────────────────────────
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toUserResponse)
+                .collect(Collectors.toList());
+    }
+
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + id));
+        return toUserResponse(user);
+    }
+
+    // ── Mapper ────────────────────────────────────────────────────────────────
+
+    private UserResponse toUserResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .active(user.isActive())
+                .build();
+    }
 }
 </file>
 
 <file path="ms-auth/src/main/resources/application.properties">
 spring.application.name=ms-auth
+# PUERTO CORRECTO PARA AUTH
+server.port=8081
+
+# Configuración de Base de Datos
+spring.datasource.url=jdbc:postgresql://localhost:5432/innovatech_auth_db
+spring.datasource.username=postgres
+spring.datasource.password=1234
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# CONFIGURACIÓN JWT (Esto es lo que faltaba y causaba el error)
+app.jwt.secret=5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+app.jwt.expiration-ms=86400000
 </file>
 
-<file path="ms-auth/src/test/java/com/innovatech/ms_auth/MsAuthApplicationTests.java">
-package com.innovatech.ms_auth;
+<file path="ms-auth/src/test/java/com/innovatech/auth/AuthServiceTest.java">
+package com.innovatech.auth;
+
+import com.innovatech.auth.dto.AuthDtos.*;
+import com.innovatech.auth.model.User;
+import com.innovatech.auth.repository.JpaUserRepository;
+import com.innovatech.auth.security.JwtService;
+import com.innovatech.auth.service.AuthService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+/**
+ * Pruebas unitarias para AuthService.
+ * Cobertura: registro, login, validación de token, consulta de usuarios.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@ExtendWith(MockitoExtension.class)
+class AuthServiceTest {
+
+    @Mock
+    private JpaUserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtService jwtService;
+
+    @InjectMocks
+    private AuthService authService;
+
+    private User sampleUser;
+    private RegisterRequest registerRequest;
+    private LoginRequest loginRequest;
+
+    @BeforeEach
+    void setUp() {
+        sampleUser = User.builder()
+                .id(1L)
+                .name("Benjamin Valdes")
+                .email("benjamin@innovatech.cl")
+                .password("hashed_password")
+                .role(User.Role.EMPLOYEE)
+                .active(true)
+                .build();
+
+        registerRequest = RegisterRequest.builder()
+                .name("Benjamin Valdes")
+                .email("benjamin@innovatech.cl")
+                .password("secret123")
+                .build();
+
+        loginRequest = new LoginRequest("benjamin@innovatech.cl", "secret123");
+    }
+
+    // ── Registro ─────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("register: debe registrar usuario nuevo y retornar token")
+    void register_newUser_returnsAuthResponse() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed_password");
+        when(userRepository.save(any(User.class))).thenReturn(sampleUser);
+        when(jwtService.generateToken(anyString(), anyString(), anyLong())).thenReturn("jwt_token_mock");
+
+        AuthResponse response = authService.register(registerRequest);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getToken()).isEqualTo("jwt_token_mock");
+        assertThat(response.getEmail()).isEqualTo("benjamin@innovatech.cl");
+        assertThat(response.getType()).isEqualTo("Bearer");
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("register: debe lanzar excepción si el email ya existe")
+    void register_duplicateEmail_throwsException() {
+        when(userRepository.existsByEmail("benjamin@innovatech.cl")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(registerRequest))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("ya está registrado");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("register: debe asignar rol EMPLOYEE por defecto si no se especifica")
+    void register_noRoleSpecified_assignsEmployeeRole() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(1L);
+            return u;
+        });
+        when(jwtService.generateToken(anyString(), anyString(), anyLong())).thenReturn("token");
+
+        RegisterRequest noRoleRequest = RegisterRequest.builder()
+                .name("Test")
+                .email("test@test.cl")
+                .password("pass123")
+                .build();
+
+        AuthResponse response = authService.register(noRoleRequest);
+        assertThat(response.getRole()).isEqualTo("EMPLOYEE");
+    }
+
+    // ── Login ─────────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("login: debe autenticar usuario válido y retornar token")
+    void login_validCredentials_returnsAuthResponse() {
+        when(userRepository.findByEmail("benjamin@innovatech.cl")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.matches("secret123", "hashed_password")).thenReturn(true);
+        when(jwtService.generateToken(anyString(), anyString(), anyLong())).thenReturn("jwt_token_mock");
+
+        AuthResponse response = authService.login(loginRequest);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getToken()).isEqualTo("jwt_token_mock");
+        assertThat(response.getEmail()).isEqualTo("benjamin@innovatech.cl");
+    }
+
+    @Test
+    @DisplayName("login: debe lanzar excepción con email inexistente")
+    void login_unknownEmail_throwsBadCredentials() {
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessageContaining("Credenciales inválidas");
+    }
+
+    @Test
+    @DisplayName("login: debe lanzar excepción con contraseña incorrecta")
+    void login_wrongPassword_throwsBadCredentials() {
+        when(userRepository.findByEmail("benjamin@innovatech.cl")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    @DisplayName("login: debe lanzar excepción si usuario está inactivo")
+    void login_inactiveUser_throwsBadCredentials() {
+        sampleUser.setActive(false);
+        when(userRepository.findByEmail("benjamin@innovatech.cl")).thenReturn(Optional.of(sampleUser));
+
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessageContaining("inactivo");
+    }
+
+    // ── Consulta ──────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("getAllUsers: debe retornar lista de usuarios")
+    void getAllUsers_returnsUserList() {
+        when(userRepository.findAll()).thenReturn(List.of(sampleUser));
+
+        List<UserResponse> users = authService.getAllUsers();
+
+        assertThat(users).hasSize(1);
+        assertThat(users.get(0).getEmail()).isEqualTo("benjamin@innovatech.cl");
+    }
+
+    @Test
+    @DisplayName("getUserById: debe retornar usuario existente")
+    void getUserById_existingId_returnsUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUser));
+
+        UserResponse response = authService.getUserById(1L);
+
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getName()).isEqualTo("Benjamin Valdes");
+    }
+
+    @Test
+    @DisplayName("getUserById: debe lanzar excepción con ID inexistente")
+    void getUserById_nonExistingId_throwsException() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.getUserById(99L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no encontrado");
+    }
+
+    // ── Validación de token ───────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("validateToken: debe retornar true para token válido")
+    void validateToken_validToken_returnsTrue() {
+        when(jwtService.isTokenValid("valid_token")).thenReturn(true);
+        assertThat(authService.validateToken("valid_token")).isTrue();
+    }
+
+    @Test
+    @DisplayName("validateToken: debe retornar false para token inválido")
+    void validateToken_invalidToken_returnsFalse() {
+        when(jwtService.isTokenValid("bad_token")).thenReturn(false);
+        assertThat(authService.validateToken("bad_token")).isFalse();
+    }
+}
+</file>
+
+<file path="ms-auth/src/test/java/com/innovatech/auth/MsAuthApplicationTests.java">
+package com.innovatech.auth;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -1946,31 +3606,21 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.14</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+		<version>3.4.5</version>
+		<relativePath/> </parent>
 	<groupId>com.innovatech</groupId>
 	<artifactId>ms-proyectos</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<version>1.0.0</version>
+	<name>ms-proyectos</name>
+	<description>Microservicio de Gestión de Proyectos - Innovatech Solutions</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -1979,11 +3629,6 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -1999,6 +3644,10 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+	    <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -2015,66 +3664,828 @@ Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
 					</excludes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
-
 </project>
 </file>
 
-<file path="ms-proyectos/src/main/java/com/innovatech/ms_proyectos/MsProyectosApplication.java">
-package com.innovatech.ms_proyectos;
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/config/GlobalExceptionHandler.java">
+package com.innovatech.proyectos.config;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Manejador global de excepciones para ms-proyectos.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(e ->
+                fields.put(((FieldError) e).getField(), e.getDefaultMessage()));
+        return buildError(HttpStatus.BAD_REQUEST, "Error de validación", fields);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegal(IllegalArgumentException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, "Valor inválido: " + ex.getValue(), null);
+    }
+
+@ExceptionHandler(Exception.class)
+public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+    ex.printStackTrace(); 
+    return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", null);
+}
+
+    private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String msg, Object details) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", msg);
+        if (details != null) body.put("details", details);
+        return ResponseEntity.status(status).body(body);
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/config/SecurityConfig.java">
+package com.innovatech.proyectos.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+/**
+ * Configuración de seguridad para ms-proyectos.
+ * Este microservicio confía en que el BFF ya validó el JWT.
+ * Permite todas las solicitudes en su puerto interno (8082).
+ */
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()
+            );
+        return http.build();
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/controller/ProjectController.java">
+package com.innovatech.proyectos.controller;
+
+import com.innovatech.proyectos.dto.ProjectDtos.*;
+import com.innovatech.proyectos.model.Project;
+import com.innovatech.proyectos.service.ProjectService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Controlador REST del microservicio ms-proyectos.
+ * Expone endpoints CRUD de proyectos con soporte de filtros por status y tipo.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@RestController
+@RequestMapping("/api/projects")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+public class ProjectController {
+
+    private final ProjectService projectService;
+
+    /**
+     * POST /api/projects
+     * Crea un nuevo proyecto usando el Factory Method correspondiente.
+     */
+    @PostMapping
+    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request) {
+        ProjectResponse response = projectService.createProject(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * GET /api/projects
+     * Retorna todos los proyectos. Soporta filtros por status y tipo.
+     */
+    @GetMapping
+    public ResponseEntity<List<ProjectResponse>> getAllProjects(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type) {
+
+        if (status != null) {
+            return ResponseEntity.ok(projectService.getProjectsByStatus(
+                    Project.ProjectStatus.valueOf(status.toUpperCase())));
+        }
+        if (type != null) {
+            return ResponseEntity.ok(projectService.getProjectsByType(
+                    Project.ProjectType.valueOf(type.toUpperCase())));
+        }
+        return ResponseEntity.ok(projectService.getAllProjects());
+    }
+
+    /**
+     * GET /api/projects/{id}
+     * Retorna un proyecto por ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Long id) {
+        return ResponseEntity.ok(projectService.getProjectById(id));
+    }
+
+    /**
+     * GET /api/projects/manager/{managerId}
+     * Retorna proyectos asignados a un manager.
+     */
+    @GetMapping("/manager/{managerId}")
+    public ResponseEntity<List<ProjectResponse>> getByManager(@PathVariable Long managerId) {
+        return ResponseEntity.ok(projectService.getProjectsByManager(managerId));
+    }
+
+    /**
+     * PATCH /api/projects/{id}/status
+     * Actualiza el estado de un proyecto.
+     */
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ProjectResponse> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusRequest request) {
+        return ResponseEntity.ok(projectService.updateStatus(id, request));
+    }
+
+    /**
+     * DELETE /api/projects/{id}
+     * Elimina un proyecto por ID.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        projectService.deleteProject(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * GET /api/projects/health
+     * Endpoint de salud del microservicio.
+     */
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "UP",
+                "service", "ms-proyectos",
+                "version", "1.0.0",
+                "totalProjects", projectService.getTotalCount()
+        ));
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/dto/ProjectDtos.java">
+package com.innovatech.proyectos.dto;
+
+import com.innovatech.proyectos.model.Project;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * DTOs del microservicio ms-proyectos.
+ */
+public class ProjectDtos {
+
+    // ── Request: Creación de proyecto ────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateProjectRequest {
+        @NotBlank(message = "El nombre del proyecto es obligatorio")
+        private String name;
+
+        private String description;
+
+        @NotNull(message = "El tipo de proyecto es obligatorio")
+        private Project.ProjectType type;
+
+        private Long managerId;
+        private LocalDate startDate;
+        private LocalDate endDate;
+
+        // SOFTWARE
+        private String techStack;
+        private String repositoryUrl;
+
+        // CONSULTING
+        private String clientName;
+        private Integer slaDays;
+
+        // INFRASTRUCTURE
+        private String cloudProvider;
+        private Double budgetUsd;
+    }
+
+    // ── Request: Actualización de estado ─────────────────────────────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateStatusRequest {
+        @NotNull(message = "El nuevo estado es obligatorio")
+        private Project.ProjectStatus status;
+    }
+
+    // ── Response: Proyecto ────────────────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProjectResponse {
+        private Long id;
+        private String name;
+        private String description;
+        private String type;
+        private String status;
+        private Long managerId;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private String techStack;
+        private String repositoryUrl;
+        private String clientName;
+        private Integer slaDays;
+        private String cloudProvider;
+        private Double budgetUsd;
+        private LocalDateTime createdAt;
+    }
+
+    // ── Response: Resumen ────────────────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProjectSummary {
+        private Long id;
+        private String name;
+        private String type;
+        private String status;
+        private Long managerId;
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/model/Project.java">
+package com.innovatech.proyectos.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * Entidad Proyecto - representa un proyecto gestionado en la plataforma Innovatech.
+ * Soporta los tipos: SOFTWARE, CONSULTING, INFRASTRUCTURE (Factory Method Pattern).
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Entity
+@Table(name = "projects")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Project {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
+    private ProjectType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ProjectStatus status = ProjectStatus.PLANNING;
+
+    @Column(name = "manager_id")
+    private Long managerId;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    // Atributos específicos de proyectos SOFTWARE
+    @Column(name = "tech_stack")
+    private String techStack;
+
+    @Column(name = "repository_url")
+    private String repositoryUrl;
+
+    // Atributos específicos de proyectos CONSULTING
+    @Column(name = "client_name")
+    private String clientName;
+
+    @Column(name = "sla_days")
+    private Integer slaDays;
+
+    // Atributos específicos de proyectos INFRASTRUCTURE
+    @Column(name = "cloud_provider")
+    private String cloudProvider;
+
+    @Column(name = "budget_usd")
+    private Double budgetUsd;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public enum ProjectType {
+        SOFTWARE, CONSULTING, INFRASTRUCTURE
+    }
+
+    public enum ProjectStatus {
+        PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED, CANCELLED
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/MsProyectosApplication.java">
+package com.innovatech.proyectos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Punto de entrada del microservicio de Gestión de Proyectos (ms-proyectos).
+ * Aplica patrones: Repository Pattern, Factory Method, Circuit Breaker.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ * @version 1.0.0
+ */
 @SpringBootApplication
 public class MsProyectosApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MsProyectosApplication.class, args);
+    }
+}
+</file>
 
-	public static void main(String[] args) {
-		SpringApplication.run(MsProyectosApplication.class, args);
-	}
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ConsultingProjectFactory.java">
+package com.innovatech.proyectos.patterns.factory;
 
+import com.innovatech.proyectos.dto.ProjectDtos.CreateProjectRequest;
+import com.innovatech.proyectos.model.Project;
+import org.springframework.stereotype.Component;
+
+/**
+ * Fábrica concreta para proyectos de tipo CONSULTING.
+ *
+ * PATRÓN FACTORY METHOD: Crea proyectos de consultoría con atributos
+ * de SLA, nombre del cliente e hitos de entregables.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Component
+public class ConsultingProjectFactory extends ProjectFactory {
+
+    private static final int DEFAULT_SLA_DAYS = 30;
+
+    @Override
+    public Project createProject(CreateProjectRequest request) {
+        Project project = buildBaseProject(request);
+
+        // Atributos específicos de proyectos CONSULTING
+        project.setClientName(request.getClientName());
+        project.setSlaDays(
+            request.getSlaDays() != null
+                ? request.getSlaDays()
+                : DEFAULT_SLA_DAYS
+        );
+
+        return project;
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/InfrastructureProjectFactory.java">
+package com.innovatech.proyectos.patterns.factory;
+
+import com.innovatech.proyectos.dto.ProjectDtos.CreateProjectRequest;
+import com.innovatech.proyectos.model.Project;
+import org.springframework.stereotype.Component;
+
+/**
+ * Fábrica concreta para proyectos de tipo INFRASTRUCTURE.
+ *
+ * PATRÓN FACTORY METHOD: Crea proyectos de infraestructura con atributos
+ * de proveedor cloud, presupuesto USD y configuraciones de red.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Component
+public class InfrastructureProjectFactory extends ProjectFactory {
+
+    private static final String DEFAULT_CLOUD = "AWS";
+
+    @Override
+    public Project createProject(CreateProjectRequest request) {
+        Project project = buildBaseProject(request);
+
+        // Atributos específicos de proyectos INFRASTRUCTURE
+        project.setCloudProvider(
+            request.getCloudProvider() != null
+                ? request.getCloudProvider()
+                : DEFAULT_CLOUD
+        );
+        project.setBudgetUsd(
+            request.getBudgetUsd() != null
+                ? request.getBudgetUsd()
+                : 0.0
+        );
+
+        return project;
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ProjectFactory.java">
+package com.innovatech.proyectos.patterns.factory;
+
+import com.innovatech.proyectos.dto.ProjectDtos.CreateProjectRequest;
+import com.innovatech.proyectos.model.Project;
+
+/**
+ * Fábrica abstracta de proyectos.
+ *
+ * PATRÓN FACTORY METHOD: Define el contrato para la creación de proyectos,
+ * delegando en las subclases la lógica de inicialización específica de cada tipo.
+ *
+ * Beneficios aplicados:
+ *  - Extensibilidad: añadir un nuevo tipo de proyecto solo requiere una nueva fábrica.
+ *  - Principio Open/Closed: el código existente no se modifica al agregar tipos.
+ *  - Encapsulación: la lógica de construcción está oculta para el cliente.
+ *  - Consistencia: todos los proyectos de un tipo se crean con los mismos atributos base.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+public abstract class ProjectFactory {
+
+    /**
+     * Factory Method: crea un proyecto del tipo correspondiente.
+     * Cada subclase concreta implementa la lógica de construcción específica.
+     *
+     * @param request datos de creación del proyecto
+     * @return instancia de Project lista para persistir
+     */
+    public abstract Project createProject(CreateProjectRequest request);
+
+    /**
+     * Template Method: construye los atributos comunes a todos los proyectos.
+     * Las fábricas concretas llaman a este método y complementan con atributos propios.
+     */
+    protected Project buildBaseProject(CreateProjectRequest request) {
+        return Project.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .type(request.getType())
+                .status(Project.ProjectStatus.PLANNING)
+                .managerId(request.getManagerId())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .build();
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/ProjectFactoryProvider.java">
+package com.innovatech.proyectos.patterns.factory;
+
+import com.innovatech.proyectos.model.Project.ProjectType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * Proveedor de fábricas de proyectos.
+ *
+ * PATRÓN FACTORY METHOD: Selecciona y retorna la fábrica concreta adecuada
+ * según el tipo de proyecto solicitado. El servicio usa este proveedor
+ * en lugar de instanciar fábricas directamente.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Component
+@RequiredArgsConstructor
+public class ProjectFactoryProvider {
+
+    private final SoftwareProjectFactory softwareFactory;
+    private final ConsultingProjectFactory consultingFactory;
+    private final InfrastructureProjectFactory infrastructureFactory;
+
+    /**
+     * Retorna la fábrica apropiada para el tipo de proyecto indicado.
+     *
+     * @param type tipo de proyecto
+     * @return fábrica concreta
+     * @throws IllegalArgumentException si el tipo no está soportado
+     */
+    public ProjectFactory getFactory(ProjectType type) {
+        return switch (type) {
+            case SOFTWARE       -> softwareFactory;
+            case CONSULTING     -> consultingFactory;
+            case INFRASTRUCTURE -> infrastructureFactory;
+        };
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/patterns/factory/SoftwareProjectFactory.java">
+package com.innovatech.proyectos.patterns.factory;
+
+import com.innovatech.proyectos.dto.ProjectDtos.CreateProjectRequest;
+import com.innovatech.proyectos.model.Project;
+import org.springframework.stereotype.Component;
+
+/**
+ * Fábrica concreta para proyectos de tipo SOFTWARE.
+ *
+ * PATRÓN FACTORY METHOD: Implementación concreta de ProjectFactory.
+ * Crea instancias de Project con atributos específicos para desarrollo de software:
+ * stack tecnológico, URL de repositorio y estructura de sprints.
+ *
+ * @author Benjamin Valdes, Ignacio Munoz
+ */
+@Component
+public class SoftwareProjectFactory extends ProjectFactory {
+
+    @Override
+    public Project createProject(CreateProjectRequest request) {
+        Project project = buildBaseProject(request);
+
+        // Atributos específicos de proyectos SOFTWARE
+        project.setTechStack(
+            request.getTechStack() != null
+                ? request.getTechStack()
+                : "Node.js / React / PostgreSQL"
+        );
+        project.setRepositoryUrl(
+            request.getRepositoryUrl() != null
+                ? request.getRepositoryUrl()
+                : "https://github.com/innovatech/" + slugify(request.getName())
+        );
+
+        return project;
+    }
+
+    private String slugify(String name) {
+        return name.toLowerCase()
+                   .replaceAll("[^a-z0-9\\s]", "")
+                   .replaceAll("\\s+", "-");
+    }
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/repository/IProjectRepository.java">
+package com.innovatech.proyectos.repository;
+
+import com.innovatech.proyectos.model.Project;
+import java.util.List;
+import java.util.Optional;
+
+public interface IProjectRepository {
+    Optional<Project> findById(Long id);
+    List<Project> findAll();
+    List<Project> findByStatus(Project.ProjectStatus status);
+    List<Project> findByType(Project.ProjectType type);
+    List<Project> findByManagerId(Long managerId);
+    Project save(Project project);
+    void deleteById(Long id);
+    boolean existsById(Long id);
+    long count();
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/repository/JpaProjectRepository.java">
+package com.innovatech.proyectos.repository;
+
+import com.innovatech.proyectos.model.Project;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface JpaProjectRepository extends JpaRepository<Project, Long>, IProjectRepository {
+    @Override
+    List<Project> findByStatus(Project.ProjectStatus status);
+    @Override
+    List<Project> findByType(Project.ProjectType type);
+    @Override
+    List<Project> findByManagerId(Long managerId);
+}
+</file>
+
+<file path="ms-proyectos/src/main/java/com/innovatech/proyectos/service/ProjectService.java">
+package com.innovatech.proyectos.service;
+
+import com.innovatech.proyectos.dto.ProjectDtos.*;
+import com.innovatech.proyectos.model.Project;
+import com.innovatech.proyectos.patterns.factory.ProjectFactory;
+import com.innovatech.proyectos.patterns.factory.ProjectFactoryProvider;
+import com.innovatech.proyectos.repository.IProjectRepository; 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProjectService {
+
+    // La variable debe ser de tipo Interfaz
+    private final IProjectRepository projectRepository;
+    
+    private final ProjectFactoryProvider factoryProvider;
+    
+    // ... el resto del código
+
+
+    // ── Creación (Factory Method) ─────────────────────────────────────────────
+
+    @Transactional
+    public ProjectResponse createProject(CreateProjectRequest request) {
+        // Factory Method: obtiene la fábrica adecuada según el tipo
+        ProjectFactory factory = factoryProvider.getFactory(request.getType());
+        Project project = factory.createProject(request);
+        Project saved = projectRepository.save(project);
+        return toResponse(saved);
+    }
+
+    // ── Consultas (Repository Pattern) ───────────────────────────────────────
+
+    public List<ProjectResponse> getAllProjects() {
+        return projectRepository.findAll().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public ProjectResponse getProjectById(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado con id: " + id));
+        return toResponse(project);
+    }
+
+    public List<ProjectResponse> getProjectsByStatus(Project.ProjectStatus status) {
+        return projectRepository.findByStatus(status).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProjectResponse> getProjectsByType(Project.ProjectType type) {
+        return projectRepository.findByType(type).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProjectResponse> getProjectsByManager(Long managerId) {
+        return projectRepository.findByManagerId(managerId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ── Actualización ─────────────────────────────────────────────────────────
+
+    @Transactional
+    public ProjectResponse updateStatus(Long id, UpdateStatusRequest request) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proyecto no encontrado con id: " + id));
+        project.setStatus(request.getStatus());
+        return toResponse(projectRepository.save(project));
+    }
+
+    // ── Eliminación ───────────────────────────────────────────────────────────
+
+    @Transactional
+    public void deleteProject(Long id) {
+        if (!projectRepository.existsById(id)) {
+            throw new IllegalArgumentException("Proyecto no encontrado con id: " + id);
+        }
+        projectRepository.deleteById(id);
+    }
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+
+    public long getTotalCount() {
+        return projectRepository.count();
+    }
+
+    // ── Mapper ────────────────────────────────────────────────────────────────
+
+    private ProjectResponse toResponse(Project p) {
+        return ProjectResponse.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .type(p.getType().name())
+                .status(p.getStatus().name())
+                .managerId(p.getManagerId())
+                .startDate(p.getStartDate())
+                .endDate(p.getEndDate())
+                .techStack(p.getTechStack())
+                .repositoryUrl(p.getRepositoryUrl())
+                .clientName(p.getClientName())
+                .slaDays(p.getSlaDays())
+                .cloudProvider(p.getCloudProvider())
+                .budgetUsd(p.getBudgetUsd())
+                .createdAt(p.getCreatedAt())
+                .build();
+    }
 }
 </file>
 
 <file path="ms-proyectos/src/main/resources/application.properties">
 spring.application.name=ms-proyectos
+# PUERTO CORRECTO PARA PROYECTOS (Para que no choque con el 8080 o 8081)
+server.port=8082
+
+# Configuración de Base de Datos
+spring.datasource.url=jdbc:postgresql://localhost:5432/innovatech_proyectos_db
+spring.datasource.username=postgres
+spring.datasource.password=1234
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# Evitar conflicto de puerto si algo quedó abierto
+server.error.include-message=always
 </file>
 
 <file path="ms-proyectos/src/test/java/com/innovatech/ms_proyectos/MsProyectosApplicationTests.java">

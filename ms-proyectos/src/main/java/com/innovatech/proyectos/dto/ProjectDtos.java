@@ -21,16 +21,19 @@ public class ProjectDtos {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class CreateProjectRequest {
-        @NotBlank(message = "El nombre del proyecto es obligatorio")
-        private String name;
+public static class CreateProjectRequest {
+    @NotBlank(message = "El nombre del proyecto es obligatorio")
+    private String name;
+    
+    private String description;
 
-        private String description;
+    @NotNull(message = "El tipo de proyecto es obligatorio")
+    private Project.ProjectType type;
 
-        @NotNull(message = "El tipo de proyecto es obligatorio")
-        private Project.ProjectType type;
-
-        private Long managerId;
+    // --- AGREGA ESTA LÍNEA ---
+    private Project.ProjectStatus status; 
+    
+    private Long managerId;
         private LocalDate startDate;
         private LocalDate endDate;
 
