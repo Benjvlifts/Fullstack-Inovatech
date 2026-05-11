@@ -61,9 +61,9 @@ Asegúrate de contar con el siguiente stack instalado en tu entorno local:
 
 ## 🚀 Guía Rápida
 1. Carpeta CMD Fullstack-Inovatech `docker-compose up -d`
-2. Levantar Carpeta CMD **ms-auth**, **ms-proyectos**, **ms-recursos**.  .\mvnw.cmd clean spring-boot:run 
-3. Levantar Carpeta CMD**BFF**. node src/index.js
-4. Levantar Carpeta CMD **Frontend**. npm install & npm run dev
+2. Levantar Carpeta CMD **ms-auth**, **ms-proyectos**, **ms-recursos**.   `.\mvnw.cmd clean spring-boot:run `
+3. Levantar Carpeta CMD**BFF**.  `node src/index.js`
+4. Levantar Carpeta CMD **Frontend**.  `npm install & npm run dev`
 
 ---
 *DuocUC — 2026*
