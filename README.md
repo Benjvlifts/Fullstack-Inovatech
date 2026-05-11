@@ -59,20 +59,6 @@ Asegúrate de contar con el siguiente stack instalado en tu entorno local:
 
 ---
 
-## 🚀 Guía de Instalación y Ejecución Paso a Paso
-
-Para garantizar la correcta sincronización entre servicios, sigue estrictamente este orden:
-
-### 1. Infraestructura Base
-Levanta los contenedores de bases de datos y el broker de mensajería desde la raíz:
-```bash
-docker-compose up -d
-
-Espera ~30 segundos para que Kafka esté totalmente operativo.2. Servicio de Seguridad (ms-auth)Inicia el microservicio de autenticación en el puerto 8081:Bashcd ms-auth
-./mvnw spring-boot:run
-3. Servicios de Negocio (ms-proyectos & ms-recursos)Inicia los servicios core en terminales independientes:Bash# Terminal A
-cd ms-proyectos && ./mvnw spring-boot:run
-
 ## 🚀 Guía Rápida
 1. Carpeta CMD Fullstack-Inovatech `docker-compose up -d`
 2. Levantar Carpeta CMD **ms-auth**, **ms-proyectos**, **ms-recursos**.  .\mvnw.cmd clean spring-boot:run 
