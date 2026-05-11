@@ -1,6 +1,7 @@
 package com.innovatech.proyectos.dto;
 
 import com.innovatech.proyectos.model.Project;
+import com.innovatech.proyectos.model.ProjectNote;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 
 /**
  * DTOs del microservicio ms-proyectos.
+ * Incluye DTOs para notas de avance (sistema similar a PR reviews de GitHub).
  */
 public class ProjectDtos {
 
@@ -21,19 +23,18 @@ public class ProjectDtos {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-public static class CreateProjectRequest {
-    @NotBlank(message = "El nombre del proyecto es obligatorio")
-    private String name;
-    
-    private String description;
+    public static class CreateProjectRequest {
+        @NotBlank(message = "El nombre del proyecto es obligatorio")
+        private String name;
 
-    @NotNull(message = "El tipo de proyecto es obligatorio")
-    private Project.ProjectType type;
+        private String description;
 
-    // --- AGREGA ESTA LÍNEA ---
-    private Project.ProjectStatus status; 
-    
-    private Long managerId;
+        @NotNull(message = "El tipo de proyecto es obligatorio")
+        private Project.ProjectType type;
+
+        private Project.ProjectStatus status;
+
+        private Long managerId;
         private LocalDate startDate;
         private LocalDate endDate;
 
@@ -59,6 +60,48 @@ public static class CreateProjectRequest {
         private Project.ProjectStatus status;
     }
 
+    // ── Request: Edición de proyecto (Admin) ─────────────────────────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateProjectRequest {
+        private String name;
+        private String description;
+        private Project.ProjectStatus status;
+    }
+
+    // ── Request: Asignar empleado a proyecto (Admin + Manager) ───────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssignEmployeeRequest {
+        @NotNull(message = "El ID del empleado es obligatorio")
+        private Long employeeId;
+
+        @NotBlank(message = "El nombre del empleado es obligatorio")
+        private String employeeName;
+    }
+
+    // ── Request: Agregar nota de avance (Employee) ───────────────────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateNoteRequest {
+        @NotBlank(message = "El contenido de la nota es obligatorio")
+        private String content;
+    }
+
+    // ── Request: Revisar nota (Admin + Manager) ───────────────────────────────
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReviewNoteRequest {
+        @NotNull(message = "El estado de revisión es obligatorio")
+        private ProjectNote.NoteStatus status; // APPROVED o REJECTED
+
+        private String reviewComment;
+    }
+
     // ── Response: Proyecto ────────────────────────────────────────────────────
     @Data
     @Builder
@@ -71,6 +114,8 @@ public static class CreateProjectRequest {
         private String type;
         private String status;
         private Long managerId;
+        private Long assignedUserId;
+        private String assignedUserName;
         private LocalDate startDate;
         private LocalDate endDate;
         private String techStack;
@@ -80,6 +125,25 @@ public static class CreateProjectRequest {
         private String cloudProvider;
         private Double budgetUsd;
         private LocalDateTime createdAt;
+    }
+
+    // ── Response: Nota de avance ──────────────────────────────────────────────
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class NoteResponse {
+        private Long id;
+        private Long projectId;
+        private Long authorId;
+        private String authorName;
+        private String content;
+        private String status;
+        private Long reviewerId;
+        private String reviewerName;
+        private String reviewComment;
+        private LocalDateTime createdAt;
+        private LocalDateTime reviewedAt;
     }
 
     // ── Response: Resumen ────────────────────────────────────────────────────
@@ -93,5 +157,7 @@ public static class CreateProjectRequest {
         private String type;
         private String status;
         private Long managerId;
+        private Long assignedUserId;
+        private String assignedUserName;
     }
 }

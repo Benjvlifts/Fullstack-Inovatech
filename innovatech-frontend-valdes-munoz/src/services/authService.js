@@ -26,3 +26,19 @@ export async function register(userData) {
     return data
   } catch (e) { throw parseError(e) }
 }
+
+/** Obtiene todos los usuarios */
+export async function getUsers() {
+  try {
+    const { data } = await client.get('/users')
+    return data
+  } catch (e) { throw parseError(e) }
+}
+
+/** Obtiene solo los usuarios con rol EMPLOYEE */
+export async function getEmployees() {
+  try {
+    const { data } = await client.get('/users')
+    return data.filter(u => u.role === 'EMPLOYEE')
+  } catch (e) { throw parseError(e) }
+}

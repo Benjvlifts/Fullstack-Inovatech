@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 /**
  * Entidad Proyecto - representa un proyecto gestionado en la plataforma Innovatech.
  * Soporta los tipos: SOFTWARE, CONSULTING, INFRASTRUCTURE (Factory Method Pattern).
+ * Ahora incluye asignación de un empleado real (userId del ms-auth).
  *
  * @author Benjamin Valdes, Ignacio Munoz
  */
@@ -48,6 +49,13 @@ public class Project {
 
     @Column(name = "manager_id")
     private Long managerId;
+
+    // Empleado asignado al proyecto (viene del ms-auth)
+    @Column(name = "assigned_user_id")
+    private Long assignedUserId;
+
+    @Column(name = "assigned_user_name")
+    private String assignedUserName;
 
     @Column(name = "start_date")
     private LocalDate startDate;
