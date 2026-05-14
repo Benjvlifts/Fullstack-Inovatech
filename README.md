@@ -1,4 +1,4 @@
-readme_content = """# 🚀 Innovatech Solutions — Repositorio Principal
+🚀 Innovatech Solutions — Repositorio Principal
 
 > **Plataforma Integral de Gestión de Proyectos** — Evaluación Parcial 2  
 > Asignatura: DSY1106 – Desarrollo Fullstack III | Instituto IACC | 2025  
