@@ -1,7 +1,7 @@
 # 👥 ms-recursos
 
 > **Microservicio de Gestión de Recursos Humanos** — Evaluación Parcial 2  
-> Asignatura: DSY1106 – Desarrollo Fullstack III | Instituto IACC | 2025  
+> Asignatura: DSY1106 – Desarrollo Fullstack III | Instituto DuocUC | 2026  
 > Estudiantes: **Benjamín Valdés** · **Ignacio Muñoz**
 
 ---
